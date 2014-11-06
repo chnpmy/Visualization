@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="style.css" rel="stylesheet" type="text/css"/>
+    <script type="javascript" src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script type="javascript" src="js/bootstrap.min.js"></script>
+    <script type="javascript" src="http://benjiec.github.io/scatter-matrix/scatter-matrix.js"></script>
+    <script src="http://cdn.bootcss.com/d3/3.4.13/d3.js"></script>
+</head>
+<body>
+<script>
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 300 - margin.left - margin.right,
+            height = 200 - margin.top - margin.bottom;
+
+    var formatPercent = d3.format("d");
+
+    var xs = [];
+    var ys = [];
+
+    var xAxises = [];
+    var yAxises = [];
+
+    var svgs = [];
+
+    for (var i = 0; i < 20; i++) {
+        xs[i] = d3.scale.ordinal()
+                .rangeRoundBands([0, width], .1, 1);
+
+        ys[i] = d3.scale.linear()
+                .range([height, 0]);
+
+        xAxises[i] = d3.svg.axis()
+                .scale(xs[i])
+                .orient("bottom");
+
+        yAxises[i] = d3.svg.axis()
+                .scale(ys[i])
+                .orient("left")
+                .tickFormat(formatPercent);
+
+        svgs[i] = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .attr("id", i)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    }
+
+    var positiveOrder = 1;
+    var negativeOrder = -1;
+    var noOrder = 0;
+    var currentOrder = noOrder;
+
+    d3.csv("hotel.csv", function (error, data) {
+        data.forEach(function (d) {
+            d.month = +d.month;
+            d.female = +d.female;
+            d.local = +d.local;
+            d.USA = +d.USA;
+            d.SA = +d.SA;
+            d.EU = +d.EU;
+            d.MEA = +d.MEA;
+            d.ASIA = +d.ASIA;
+            d.businessmen = +d.businessmen;
+            d.tourists = +d.tourists;
+            d.DR = +d.DR;
+            d.agency = +d.agency;
+            d.AC = +d.AC;
+            d.u20 = +d.u20;
+            d.i20to35 = +d.i20to35;
+            d.i35to55 = +d.i35to55;
+            d.m55 = +d.m55;
+            d.price = +d.price;
+            d.LoS = +d.LoS;
+            d.occupancy = +d.occupancy;
+            d.conventions = +d.conventions;
+        });
+
+        var attrs = ["month", "female", "local", "USA", "SA", "EU", "MEA", "ASIA", "businessmen",
+            "tourists", "DR", "agency", "AC", "u20", "i20to35", "i35to55", "m55", "price", "LoS",
+            "occupancy", "conventions"];
+
+        for (var i = 0; i < 20; i++)
+            xs[i].domain(data.map(function (d) {
+                return d.month;
+            }))
+
+        for (i = 0; i < 20; i++) {
+            (function (index) {
+                ys[index].domain([0, d3.max(data, function (d) {
+                    switch (index) {
+                        case 0:
+                            return d.female;
+                        case 1:
+                            return d.local;
+                        case 2:
+                            return d.USA;
+                        case 3:
+                            return d.SA;
+                        case 4:
+                            return d.EU;
+                        case 5:
+                            return d.MEA;
+                        case 6:
+                            return d.ASIA;
+                        case 7:
+                            return d.businessmen;
+                        case 8:
+                            return d.tourists;
+                        case 9:
+                            return d.DR;
+                        case 10:
+                            return d.agency;
+                        case 11:
+                            return d.AC;
+                        case 12:
+                            return d.u20;
+                        case 13:
+                            return d.i20to35;
+                        case 14:
+                            return d.i35to55;
+                        case 15:
+                            return d.m55;
+                        case 16:
+                            return d.price;
+                        case 17:
+                            return d.LoS;
+                        case 18:
+                            return d.occupancy;
+                        case 19:
+                            return d.conventions;
+                    }
+                })]);
+            })(i);
+
+            svgs[i].append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxises[i]);
+
+            svgs[i].append("g")
+                    .attr("class", "y axis")
+                    .call(yAxises[i])
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text(attrs[i + 1]);
+
+            (function (index) {
+                svgs[index].selectAll(".bar")
+                        .data(data)
+                        .enter().append("rect")
+                        .attr("class", "bar")
+                        .attr("x", function (d) {
+                            return xs[index](d.month);
+                        })
+                        .attr("width", xs[index].rangeBand())
+                        .attr("y", function (d) {
+                            switch (index) {
+                                case 0:
+                                    return ys[index](d.female);
+                                case 1:
+                                    return ys[index](d.local);
+                                case 2:
+                                    return ys[index](d.USA);
+                                case 3:
+                                    return ys[index](d.SA);
+                                case 4:
+                                    return ys[index](d.EU);
+                                case 5:
+                                    return ys[index](d.MEA);
+                                case 6:
+                                    return ys[index](d.ASIA);
+                                case 7:
+                                    return ys[index](d.businessmen);
+                                case 8:
+                                    return ys[index](d.tourists);
+                                case 9:
+                                    return ys[index](d.DR);
+                                case 10:
+                                    return ys[index](d.agency);
+                                case 11:
+                                    return ys[index](d.AC);
+                                case 12:
+                                    return ys[index](d.u20);
+                                case 13:
+                                    return ys[index](d.i20to35);
+                                case 14:
+                                    return ys[index](d.i35to55);
+                                case 15:
+                                    return ys[index](d.m55);
+                                case 16:
+                                    return ys[index](d.price);
+                                case 17:
+                                    return ys[index](d.LoS);
+                                case 18:
+                                    return ys[index](d.occupancy);
+                                case 19:
+                                    return ys[index](d.conventions);
+                            }
+                        })
+                        .attr("height", function (d) {
+                            switch (index) {
+                                case 0:
+                                    return height - ys[index](d.female);
+                                case 1:
+                                    return height - ys[index](d.local);
+                                case 2:
+                                    return height - ys[index](d.USA);
+                                case 3:
+                                    return height - ys[index](d.SA);
+                                case 4:
+                                    return height - ys[index](d.EU);
+                                case 5:
+                                    return height - ys[index](d.MEA);
+                                case 6:
+                                    return height - ys[index](d.ASIA);
+                                case 7:
+                                    return height - ys[index](d.businessmen);
+                                case 8:
+                                    return height - ys[index](d.tourists);
+                                case 9:
+                                    return height - ys[index](d.DR);
+                                case 10:
+                                    return height - ys[index](d.agency);
+                                case 11:
+                                    return height - ys[index](d.AC);
+                                case 12:
+                                    return height - ys[index](d.u20);
+                                case 13:
+                                    return height - ys[index](d.i20to35);
+                                case 14:
+                                    return height - ys[index](d.i35to55);
+                                case 15:
+                                    return height - ys[index](d.m55);
+                                case 16:
+                                    return height - ys[index](d.price);
+                                case 17:
+                                    return height - ys[index](d.LoS);
+                                case 18:
+                                    return height - ys[index](d.occupancy);
+                                case 19:
+                                    return height - ys[index](d.conventions);
+                            }
+                        });
+            })(i);
+
+        }
+
+        var sortBars = function (clickID, id) {
+            console.log(id);
+
+            var x0 = xs[id].domain(data.sort(function (a, b) {
+                if (currentOrder == noOrder) {
+                    switch (clickID) {
+                        case 0:
+                            return d3.ascending(a.female, b.female);
+                        case 1:
+                            return d3.ascending(a.local, b.local);
+                        case 2:
+                            return d3.ascending(a.USA, b.USA);
+                        case 3:
+                            return d3.ascending(a.SA, b.SA);
+                        case 4:
+                            return d3.ascending(a.EU, b.EU);
+                        case 5:
+                            return d3.ascending(a.MEA, b.MEA);
+                        case 6:
+                            return d3.ascending(a.ASIA, b.ASIA);
+                        case 7:
+                            return d3.ascending(a.businessmen, b.businessmen);
+                        case 8:
+                            return d3.ascending(a.tourists, b.tourists);
+                        case 9:
+                            return d3.ascending(a.DR, b.DR);
+                        case 10:
+                            return d3.ascending(a.agency, b.agency);
+                        case 11:
+                            return d3.ascending(a.AC, b.AC);
+                        case 12:
+                            return d3.ascending(a.u20, b.u20);
+                        case 13:
+                            return d3.ascending(a.i20to35, b.i20to35);
+                        case 14:
+                            return d3.ascending(a.i35to55, b.i35to55);
+                        case 15:
+                            return d3.ascending(a.m55, b.m55);
+                        case 16:
+                            return d3.ascending(a.price, b.price);
+                        case 17:
+                            return d3.ascending(a.LoS, b.LoS);
+                        case 18:
+                            return d3.ascending(a.occupancy, b.occupancy);
+                        case 19:
+                            return d3.ascending(a.conventions, b.conventions);
+                    }
+                }
+                else if (currentOrder == positiveOrder){
+                    switch (clickID){
+                        case 0:
+                            return d3.descending(a.female, b.female);
+                        case 1:
+                            return d3.descending(a.local, b.local);
+                        case 2:
+                            return d3.descending(a.USA, b.USA);
+                        case 3:
+                            return d3.descending(a.SA, b.SA);
+                        case 4:
+                            return d3.descending(a.EU, b.EU);
+                        case 5:
+                            return d3.descending(a.MEA, b.MEA);
+                        case 6:
+                            return d3.descending(a.ASIA, b.ASIA);
+                        case 7:
+                            return d3.descending(a.businessmen, b.businessmen);
+                        case 8:
+                            return d3.descending(a.tourists, b.tourists);
+                        case 9:
+                            return d3.descending(a.DR, b.DR);
+                        case 10:
+                            return d3.descending(a.agency, b.agency);
+                        case 11:
+                            return d3.descending(a.AC, b.AC);
+                        case 12:
+                            return d3.descending(a.u20, b.u20);
+                        case 13:
+                            return d3.descending(a.i20to35, b.i20to35);
+                        case 14:
+                            return d3.descending(a.i35to55, b.i35to55);
+                        case 15:
+                            return d3.descending(a.m55, b.m55);
+                        case 16:
+                            return d3.descending(a.price, b.price);
+                        case 17:
+                            return d3.descending(a.LoS, b.LoS);
+                        case 18:
+                            return d3.descending(a.occupancy, b.occupancy);
+                        case 19:
+                            return d3.descending(a.conventions, b.conventions);
+                    }
+                }
+                else{
+                    return d3.ascending(a.month, b.month);
+                }
+            })
+                    .map(function (d) {
+                        return d.month;
+                    }))
+                    .copy();
+
+            var transition = svgs[id].transition().duration(750),
+                    delay = function (d, i) {
+                        return i * 50;
+                    };
+
+            transition.selectAll(".bar")
+                    .delay(delay)
+                    .attr("x", function (d) {
+                        return x0(d.month);
+                    });
+
+            transition.select(".x.axis")
+                    .call(xAxises[id])
+                    .selectAll("g")
+                    .delay(delay);
+        };
+
+        d3.selectAll("svg").on("click", function () {
+            var clickID = d3.select(this).attr("id");
+            for (var svgID = 0; svgID < 20; svgID++) {
+                sortBars(+clickID, svgID);
+            }
+            if (currentOrder == noOrder) {
+                currentOrder = positiveOrder;
+            }
+            else if (currentOrder == positiveOrder){
+                currentOrder = negativeOrder;
+            }
+            else{
+                currentOrder = noOrder;
+            }
+        });
+    });
+</script>
+</body>
+</html>
