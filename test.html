@@ -12,40 +12,40 @@
 </head>
 <body>
 <script>
-    var species = ["1", "2", "3"],
-            traits = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13"];
+    var species = ["setosa", "versicolor", "virginica"],
+            traits = ["sepal length", "petal length", "sepal width", "petal width"];
 
-    var margin = [80, 160, 200, 160],
-            width = 1280 - margin[1] - margin[3],
-            height = 800 - margin[0] - margin[2];
+    var m = [80, 160, 200, 160],
+            w = 1280 - m[1] - m[3],
+            h = 800 - m[0] - m[2];
 
-    var x = d3.scale.ordinal().domain(traits).rangePoints([0, width]),
+    var x = d3.scale.ordinal().domain(traits).rangePoints([0, w]),
             y = {};
 
     var line = d3.svg.line(),
             axis = d3.svg.axis().orient("left"),
             foreground;
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin[1] + margin[3])
-            .attr("height", height + margin[0] + margin[2])
-            .append("g")
-            .attr("transform", "translate(" + margin[3] + "," + margin[0] + ")");
+    var svg = d3.select("body").append("svg:svg")
+            .attr("width", w + m[1] + m[3])
+            .attr("height", h + m[0] + m[2])
+            .append("svg:g")
+            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    d3.csv("wine.csv", function (wine) {
+    d3.csv("iris.csv", function (flowers) {
 
         // Create a scale and brush for each trait.
         traits.forEach(function (d) {
             // Coerce values to numbers.
-            wine.forEach(function (p) {
+            flowers.forEach(function (p) {
                 p[d] = +p[d];
             });
 
             y[d] = d3.scale.linear()
-                    .domain(d3.extent(wine, function (p) {
+                    .domain(d3.extent(flowers, function (p) {
                         return p[d];
                     }))
-                    .range([height, 0]);
+                    .range([h, 0]);
 
             y[d].brush = d3.svg.brush()
                     .y(y[d])
@@ -55,17 +55,17 @@
         // Add a legend.
         var legend = svg.selectAll("g.legend")
                 .data(species)
-                .enter().append("g")
+                .enter().append("svg:g")
                 .attr("class", "legend")
                 .attr("transform", function (d, i) {
                     return "translate(0," + (i * 20 + 584) + ")";
                 });
 
-        legend.append("line")
+        legend.append("svg:line")
                 .attr("class", String)
                 .attr("x2", 8);
 
-        legend.append("text")
+        legend.append("svg:text")
                 .attr("x", 12)
                 .attr("dy", ".31em")
                 .text(function (d) {
@@ -73,11 +73,11 @@
                 });
 
         // Add foreground lines.
-        foreground = svg.append("g")
+        foreground = svg.append("svg:g")
                 .attr("class", "foreground")
                 .selectAll("path")
-                .data(wine)
-                .enter().append("path")
+                .data(flowers)
+                .enter().append("svg:path")
                 .attr("d", path)
                 .attr("class", function (d) {
                     return d.species;
@@ -86,32 +86,32 @@
         // Add a group element for each trait.
         var g = svg.selectAll(".trait")
                 .data(traits)
-                .enter().append("g")
+                .enter().append("svg:g")
                 .attr("class", "trait")
                 .attr("transform", function (d) {
                     return "translate(" + x(d) + ")";
                 })
                 .call(d3.behavior.drag()
                         .origin(function (d) {
-                            return {x:x(d)};
+                            return {x: x(d)};
                         })
                         .on("dragstart", dragstart)
                         .on("drag", drag)
                         .on("dragend", dragend));
 
         // Add an axis and title.
-        g.append("g")
+        g.append("svg:g")
                 .attr("class", "axis")
                 .each(function (d) {
                     d3.select(this).call(axis.scale(y[d]));
                 })
-                .append("text")
+                .append("svg:text")
                 .attr("text-anchor", "middle")
                 .attr("y", -9)
                 .text(String);
 
         // Add a brush for each axis.
-        g.append("g")
+        g.append("svg:g")
                 .attr("class", "brush")
                 .each(function (d) {
                     d3.select(this).call(y[d].brush);
@@ -136,7 +136,7 @@
         }
 
         function dragend(d) {
-            x.domain(traits).rangePoints([0, width]);
+            x.domain(traits).rangePoints([0, w]);
             var t = d3.transition().duration(500);
             t.selectAll(".trait").attr("transform", function (d) {
                 return "translate(" + x(d) + ")";
