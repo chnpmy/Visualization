@@ -12,11 +12,12 @@
 </head>
 <body>
 <script>
-    var species = ["1", "2", "3"],
-            traits = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13"];
+    var species = ["species1", "species2", "species3"],
+            traits = ["Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols",
+                "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"];
 
     var margin = [80, 160, 200, 160],
-            width = 1280 - margin[1] - margin[3],
+            width = screen.width - margin[1] - margin[3],
             height = 800 - margin[0] - margin[2];
 
     var x = d3.scale.ordinal().domain(traits).rangePoints([0, width]),
@@ -26,10 +27,10 @@
             axis = d3.svg.axis().orient("left"),
             foreground;
 
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("body").append("svg:svg")
             .attr("width", width + margin[1] + margin[3])
             .attr("height", height + margin[0] + margin[2])
-            .append("g")
+            .append("svg:g")
             .attr("transform", "translate(" + margin[3] + "," + margin[0] + ")");
 
     d3.csv("wine.csv", function (wine) {
@@ -55,32 +56,32 @@
         // Add a legend.
         var legend = svg.selectAll("g.legend")
                 .data(species)
-                .enter().append("g")
+                .enter().append("svg:g")
                 .attr("class", "legend")
                 .attr("transform", function (d, i) {
                     return "translate(0," + (i * 20 + 584) + ")";
                 });
 
-        legend.append("line")
+        legend.append("svg:line")
                 .attr("class", String)
                 .attr("x2", 8);
 
-        legend.append("text")
+        legend.append("svg:text")
                 .attr("x", 12)
                 .attr("dy", ".31em")
                 .text(function (d) {
-                    return "Iris " + d;
+                    return "wine " + d;
                 });
 
         // Add foreground lines.
-        foreground = svg.append("g")
+        foreground = svg.append("svg:g")
                 .attr("class", "foreground")
                 .selectAll("path")
                 .data(wine)
                 .enter().append("path")
                 .attr("d", path)
                 .attr("class", function (d) {
-                    return d.species;
+                    return "species" + d.Wine;
                 });
 
         // Add a group element for each trait.
@@ -100,18 +101,18 @@
                         .on("dragend", dragend));
 
         // Add an axis and title.
-        g.append("g")
+        g.append("svg:g")
                 .attr("class", "axis")
                 .each(function (d) {
                     d3.select(this).call(axis.scale(y[d]));
                 })
-                .append("text")
+                .append("svg:text")
                 .attr("text-anchor", "middle")
                 .attr("y", -9)
                 .text(String);
 
         // Add a brush for each axis.
-        g.append("g")
+        g.append("svg:g")
                 .attr("class", "brush")
                 .each(function (d) {
                     d3.select(this).call(y[d].brush);

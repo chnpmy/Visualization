@@ -34,6 +34,18 @@ svg {
     stroke: #008;
 }
 
+.species1 {
+    stroke: #800;
+}
+
+.species2 {
+    stroke: #080;
+}
+
+.species3 {
+    stroke: #008;
+}
+
 .brush .extent {
     fill-opacity: .3;
     stroke: #fff;
