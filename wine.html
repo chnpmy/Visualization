@@ -358,6 +358,7 @@
                 cell.call(brush.clear());
                 brush.x(x[p.x]).y(y[p.y]).data = p;
             }
+            changeBars();
         }
 
         // Highlight the selected circles.
@@ -368,6 +369,22 @@
                 && e[0][1] <= d[p.y] && d[p.y] <= e[1][1]
                         ? ("species" + d.Wine) : null;
             });
+
+            var total = 71;
+            changeBars();
+        }
+
+        function changeBars(){
+            var total = 71;
+            d3.selectAll("rect.species1").attr("width", function(){
+                return d3.selectAll("circle.species1")[0].length / (total * 169) * 820;
+            });
+            d3.selectAll("rect.species2").attr("width", function(){
+                return d3.selectAll("circle.species2")[0].length / (total * 169) * 820;
+            });
+            d3.selectAll("rect.species3").attr("width", function(){
+                return d3.selectAll("circle.species3")[0].length / (total * 169) * 820;
+            });
         }
 
         // If the brush is empty, select all circles.
@@ -375,6 +392,7 @@
             if (brush.empty()) svg.selectAll(".cell circle").attr("class", function(d) {
                 return "species" + d.Wine;
             });
+            changeBars();
         }
 
         function cross(a, b) {
