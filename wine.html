@@ -3,15 +3,67 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>wine</title>
+    <script type="javascript" src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="winestyle.css" rel="stylesheet" type="text/css"/>
-    <script type="javascript" src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
     <script type="javascript" src="js/bootstrap.min.js"></script>
-    <script type="javascript" src="http://benjiec.github.io/scatter-matrix/scatter-matrix.js"></script>
     <script src="http://cdn.bootcss.com/d3/3.4.13/d3.js"></script>
 </head>
 <body>
-<script>
+<script type="text/javascript">
+    var data = [59, 71, 48];
+    var species = ["species1", "species2", "species3"];
+    var chart = d3.select("body").append("svg")
+            .attr("class", "chart")
+            .attr("width", screen.width - 300)
+            .attr("height", 140)
+            .append("g")
+            .attr("transform", "translate(160,15)");
+    var x = d3.scale.linear()
+            .domain([0, d3.max(data)])
+            .range([0, 820]);
+    var y = d3.scale.ordinal()
+            .domain(data)
+            .rangeBands([0, 120]);
+    chart.selectAll("rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", function(d, i){
+                return species[i];
+            })
+            .attr("y", y)
+            .attr("width", x)
+            .attr("height", y.rangeBand());
+    /*
+    chart.selectAll("text")
+            .data(data)
+            .enter().append("text")
+            .attr("x", x)
+            .attr("y", function(d) { return y(d) + y.rangeBand() / 2; })
+            .attr("dx", -3) // padding-right
+            .attr("dy", ".35em") // vertical-align: middle
+            .attr("text-anchor", "end") // text-align: right
+            .text(String);
+            */
+    chart.selectAll("line")
+            .data(x.ticks(10))
+            .enter().append("line")
+            .attr("x1", x)
+            .attr("x2", x)
+            .attr("y1", 0)
+            .attr("y2", 120)
+            .style("stroke", "#ccc");
+    chart.selectAll("a")
+            .data(x.ticks(8))
+            .enter().append("text")
+            .attr("class", "rule")
+            .attr("x", x)
+            .attr("y", 0)
+            .attr("dy", -3)
+            .attr("text-anchor", "middle")
+            .text(String);
+</script>
+<script type="text/javascript">
     var species = ["species1", "species2", "species3"],
             traits = ["Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols",
                 "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"];
@@ -23,7 +75,7 @@
     var x = d3.scale.ordinal().domain(traits).rangePoints([0, width]),
             y = {};
 
-    var line = d3.svg.line(),
+    var line = d3.svg.line().interpolate("monotone"),
             axis = d3.svg.axis().orient("left"),
             foreground;
 
@@ -166,7 +218,172 @@
                 return extents[i][0] <= d[p] && d[p] <= extents[i][1];
             });
         });
+/*
+        $(document).ready(function(){
+            $("rect.species1").attr("width", 100);
+        });
+*/
+        var total = 71;
+        d3.selectAll("rect.species1").attr("width", function(){
+            return (d3.selectAll("path.species1")[0].length - d3.selectAll("path.species1.fade")[0].length)/total * 820;
+        });
+        d3.selectAll("rect.species2").attr("width", function(){
+            return (d3.selectAll("path.species2")[0].length - d3.selectAll("path.species2.fade")[0].length)/total * 820;
+        });
+        d3.selectAll("rect.species3").attr("width", function(){
+            return (d3.selectAll("path.species3")[0].length - d3.selectAll("path.species3.fade")[0].length)/total * 820;
+        });
     }
+</script>
+<script type="text/javascript">
+
+    d3.csv("wine.csv", function(wine) {
+
+        // Size parameters.
+        var size = 111,
+                padding = 5,
+                n = 13,
+                traits = ["Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols",
+                    "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"];
+
+        // Position scales.
+        var x = {}, y = {};
+        traits.forEach(function(trait) {
+            // Coerce values to numbers.
+            wine.forEach(function(d) { d[trait] = +d[trait]; });
+
+            var value = function(d) { return d[trait]; },
+                    domain = [d3.min(wine, value), d3.max(wine, value)],
+                    range = [padding / 2, size - padding / 2];
+            x[trait] = d3.scale.linear().domain(domain).range(range);
+            y[trait] = d3.scale.linear().domain(domain).range(range.reverse());
+        });
+
+        // Axes.
+        var axis = d3.svg.axis()
+                .ticks(0)
+                .tickSize(size * n);
+
+        // Brush.
+        var brush = d3.svg.brush()
+                .on("brushstart", brushstart)
+                .on("brush", brush)
+                .on("brushend", brushend);
+
+        // Root panel.
+        var svg = d3.select("body").append("svg:svg")
+                .attr("width", screen.width)
+                .attr("height", 1500)
+                .append("svg:g")
+                .attr("transform", "translate(160,0)");
+
+        // Legend.
+        /*
+        var legend = svg.selectAll("g.legend")
+                .data(["species1", "species2", "species3"])
+                .enter().append("svg:g")
+                .attr("class", "legend")
+                .attr("transform", function(d, i) { return "translate(-179," + (i * 20 + 594) + ")"; });
+
+
+        legend.append("svg:circle")
+                .attr("class", String)
+                .attr("r", 3);
+
+        legend.append("svg:text")
+                .attr("x", 12)
+                .attr("dy", ".31em")
+                .text(function(d) { return "Wine " + d; });
+
+         */
+
+        // X-axis.
+        svg.selectAll("g.x.axis")
+                .data(traits)
+                .enter().append("svg:g")
+                .attr("class", "x axis")
+                .attr("transform", function(d, i) { return "translate(" + i * size + ",0)"; })
+                .each(function(d) { d3.select(this).call(axis.scale(x[d]).orient("bottom")); });
+
+        // Y-axis.
+        svg.selectAll("g.y.axis")
+                .data(traits)
+                .enter().append("svg:g")
+                .attr("class", "y axis")
+                .attr("transform", function(d, i) { return "translate(0," + i * size + ")"; })
+                .each(function(d) { d3.select(this).call(axis.scale(y[d]).orient("right")); });
+
+        // Cell and plot.
+        var cell = svg.selectAll("g.cell")
+                .data(cross(traits, traits))
+                .enter().append("svg:g")
+                .attr("class", "cell")
+                .attr("transform", function(d) { return "translate(" + d.i * size + "," + d.j * size + ")"; })
+                .each(plot);
+
+        // Titles for the diagonal.
+        cell.filter(function(d) { return d.i == d.j; }).append("svg:text")
+                .attr("x", padding)
+                .attr("y", padding)
+                .attr("dy", ".71em")
+                .text(function(d) { return d.x; });
+
+        function plot(p) {
+            var cell = d3.select(this);
+
+            // Plot frame.
+            cell.append("svg:rect")
+                    .attr("class", "frame")
+                    .attr("x", padding / 2)
+                    .attr("y", padding / 2)
+                    .attr("width", size - padding)
+                    .attr("height", size - padding);
+
+            // Plot dots.
+            cell.selectAll("circle")
+                    .data(wine)
+                    .enter().append("svg:circle")
+                    .attr("class", function(d) { return "species" + d.Wine; })
+                    .attr("cx", function(d) { return x[p.x](d[p.x]); })
+                    .attr("cy", function(d) { return y[p.y](d[p.y]); })
+                    .attr("r", 3);
+
+            // Plot brush.
+            cell.call(brush.x(x[p.x]).y(y[p.y]));
+        }
+
+        // Clear the previously-active brush, if any.
+        function brushstart(p) {
+            if (brush.data !== p) {
+                cell.call(brush.clear());
+                brush.x(x[p.x]).y(y[p.y]).data = p;
+            }
+        }
+
+        // Highlight the selected circles.
+        function brush(p) {
+            var e = brush.extent();
+            svg.selectAll(".cell circle").attr("class", function(d) {
+                return e[0][0] <= d[p.x] && d[p.x] <= e[1][0]
+                && e[0][1] <= d[p.y] && d[p.y] <= e[1][1]
+                        ? ("species" + d.Wine) : null;
+            });
+        }
+
+        // If the brush is empty, select all circles.
+        function brushend() {
+            if (brush.empty()) svg.selectAll(".cell circle").attr("class", function(d) {
+                return "species" + d.Wine;
+            });
+        }
+
+        function cross(a, b) {
+            var c = [], n = a.length, m = b.length, i, j;
+            for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+            return c;
+        }
+    });
+
 </script>
 </body>
 </html>

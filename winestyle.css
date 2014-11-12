@@ -22,18 +22,6 @@ svg {
     stroke-width: 2px;
 }
 
-.setosa {
-    stroke: #800;
-}
-
-.versicolor {
-    stroke: #080;
-}
-
-.virginica {
-    stroke: #008;
-}
-
 .species1 {
     stroke: #800;
 }
@@ -52,6 +40,10 @@ svg {
     shape-rendering: crispEdges;
 }
 
+.axis {
+    shape-rendering: crispEdges;
+}
+
 .axis line, .axis path {
     fill: none;
     stroke: #000;
@@ -61,4 +53,50 @@ svg {
 .axis text {
     text-shadow: 0 1px 0 #fff;
     cursor: move;
+}
+
+rect.extent {
+    fill: #000;
+    fill-opacity: .125;
+    stroke: #fff;
+}
+
+rect.frame {
+    fill: #fff;
+    fill-opacity: .7;
+    stroke: #aaa;
+}
+
+rect.species1{
+    fill: #800;
+}
+
+rect.species2{
+    fill: #080;
+}
+
+rect.species3{
+    fill: #008;
+}
+
+circle {
+    fill: #ccc;
+    fill-opacity: .5;
+}
+
+.legend circle {
+    fill-opacity: 1;
+}
+
+.legend text {
+    font-size: 18px;
+    font-style: oblique;
+}
+
+.cell text {
+    pointer-events: none;
+}
+
+.chart rect {
+    stroke: white;
 }
